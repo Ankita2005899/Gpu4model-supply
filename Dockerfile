@@ -1,7 +1,7 @@
 FROM python:3.8-slim
 
 RUN apt-get update && apt-get install -y \
-    git wget ffmpeg build-essential libgl1 libglib2.0-0 \
+    git wget ffmpeg build-essential libgl1 libglib2.0-0 espeak-ng \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app/backend

@@ -405,9 +405,10 @@ async def generate(
             if clone_result.returncode != 0:
                 return JSONResponse(status_code=500, content={"error": "Voice cloning failed: " + clone_result.stderr[-500:]})
         else:
-            audio_path = UPLOAD_DIR / f"{job_id}.mp3"
-            communicate = edge_tts.Communicate(script, voice="en-IN-NeerjaNeural")
-            await communicate.save(str(audio_path))
+            audio_path = UPLOAD_DIR / f"{job_id}.wav"
+            engine = pyttsx3.init()
+            engine.save_to_file(script, str(audio_path))
+            engine.runAndWait()
 
         job_result_dir = RESULT_DIR / job_id
         job_result_dir.mkdir(exist_ok=True)
