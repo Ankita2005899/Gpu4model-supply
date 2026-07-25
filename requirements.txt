@@ -7,3 +7,4 @@ rembg==2.0.61
 onnxruntime==1.19.2
 pymatting==1.1.14
 numpy==1.23.4
+edge-tts==6.1.19

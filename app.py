@@ -3,7 +3,7 @@ import shutil
 import subprocess
 import uuid
 from pathlib import Path
-
+import edge_tts
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, HTMLResponse
@@ -406,7 +406,8 @@ async def generate(
                 return JSONResponse(status_code=500, content={"error": "Voice cloning failed: " + clone_result.stderr[-500:]})
         else:
             audio_path = UPLOAD_DIR / f"{job_id}.mp3"
-            gTTS(text=script, lang="en", tld="co.in", slow=False).save(str(audio_path))
+            communicate = edge_tts.Communicate(script, voice="en-IN-NeerjaNeural")
+            await communicate.save(str(audio_path))
 
         job_result_dir = RESULT_DIR / job_id
         job_result_dir.mkdir(exist_ok=True)
