@@ -419,10 +419,10 @@ async def generate(
             "--driven_audio", str(audio_path.resolve()),
             "--source_image", str(image_path.resolve()),
             "--result_dir", str(job_result_dir.resolve()),
-            "--preprocess", "full",
-            "--enhancer", "gfpgan",
-            "--size", "512",
-            "--batch_size", "32",
+            "--preprocess", "crop",
+            "--size", "256",
+            "--batch_size", "1",
+      
         ]
 
         try:
