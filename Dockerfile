@@ -1,8 +1,9 @@
 FROM python:3.8-slim
 
 RUN apt-get update && apt-get install -y \
-    git wget ffmpeg build-essential libgl1 libglib2.0-0 espeak-ng \
-    && rm -rf /var/lib/apt/lists/*
+    git wget ffmpeg build-essential libgl1 libglib2.0-0 espeak libespeak1 \
+    && rm -rf /var/lib/apt/lists/* \
+    && ln -sf /usr/lib/x86_64-linux-gnu/libespeak.so.1 /usr/lib/libespeak.so.1 || true
 
 WORKDIR /app/backend
 
