@@ -368,7 +368,6 @@ MAX_SCRIPT_CHARS = 5000
 def health():
     return {"status": "ok", "voice_cloning_available": XTTS_AVAILABLE}
 
-
 @app.post("/generate")
 async def generate(
     image: UploadFile = File(...),
@@ -387,76 +386,84 @@ async def generate(
 
     job_id = str(uuid.uuid4())[:8]
 
-    image_path = UPLOAD_DIR / f"{job_id}_{image.filename}"
-    with open(image_path, "wb") as f:
-        shutil.copyfileobj(image.file, f)
-
-    # Voice: use XTTS cloning only if that environment is actually configured;
-    # otherwise fall back to gTTS automatically (no crash either way).
-    if voice_sample is not None and XTTS_AVAILABLE:
-        audio_path = UPLOAD_DIR / f"{job_id}.wav"
-        sample_path = UPLOAD_DIR / f"{job_id}_sample.wav"
-        with open(sample_path, "wb") as f:
-            shutil.copyfileobj(voice_sample.file, f)
-        clone_cmd = [XTTS_PYTHON_PATH, XTTS_CLONE_SCRIPT, script, str(sample_path.resolve()), str(audio_path.resolve())]
-        clone_env = os.environ.copy()
-        clone_env["COQUI_TOS_AGREED"] = "1"
-        clone_result = subprocess.run(clone_cmd, capture_output=True, text=True, env=clone_env)
-        if clone_result.returncode != 0:
-            return JSONResponse(status_code=500, content={"error": "Voice cloning failed: " + clone_result.stderr[-500:]})
-    else:
-        audio_path = UPLOAD_DIR / f"{job_id}.mp3"
-        gTTS(text=script, lang="en", tld="co.in", slow=False).save(str(audio_path))
-
-    job_result_dir = RESULT_DIR / job_id
-    job_result_dir.mkdir(exist_ok=True)
-
-    cmd = [
-        "python3.8", "inference.py",
-        "--driven_audio", str(audio_path.resolve()),
-        "--source_image", str(image_path.resolve()),
-        "--result_dir", str(job_result_dir.resolve()),
-        "--preprocess", "full",
-        "--enhancer", "gfpgan",
-        "--size", "512",
-        "--batch_size", "32",
-    ]
-
     try:
-        subprocess.run(cmd, cwd=str(SADTALKER_DIR), check=True, timeout=1800)
-    except subprocess.CalledProcessError as e:
-        return JSONResponse(status_code=500, content={"error": "Inference failed", "detail": str(e)})
-    except subprocess.TimeoutExpired:
-        return JSONResponse(status_code=504, content={"error": "Inference timed out (video generation takes too long on this server)"})
+        image_path = UPLOAD_DIR / f"{job_id}_{image.filename}"
+        with open(image_path, "wb") as f:
+            shutil.copyfileobj(image.file, f)
 
-    mp4_files = list(job_result_dir.glob("**/*.mp4"))
-    if not mp4_files:
-        return JSONResponse(status_code=500, content={"error": "No output video found"})
+        # Voice: use XTTS cloning only if that environment is actually configured;
+        # otherwise fall back to gTTS automatically (no crash either way).
+        if voice_sample is not None and XTTS_AVAILABLE:
+            audio_path = UPLOAD_DIR / f"{job_id}.wav"
+            sample_path = UPLOAD_DIR / f"{job_id}_sample.wav"
+            with open(sample_path, "wb") as f:
+                shutil.copyfileobj(voice_sample.file, f)
+            clone_cmd = [XTTS_PYTHON_PATH, XTTS_CLONE_SCRIPT, script, str(sample_path.resolve()), str(audio_path.resolve())]
+            clone_env = os.environ.copy()
+            clone_env["COQUI_TOS_AGREED"] = "1"
+            clone_result = subprocess.run(clone_cmd, capture_output=True, text=True, env=clone_env)
+            if clone_result.returncode != 0:
+                return JSONResponse(status_code=500, content={"error": "Voice cloning failed: " + clone_result.stderr[-500:]})
+        else:
+            audio_path = UPLOAD_DIR / f"{job_id}.mp3"
+            gTTS(text=script, lang="en", tld="co.in", slow=False).save(str(audio_path))
 
-    current_video = mp4_files[0]
+        job_result_dir = RESULT_DIR / job_id
+        job_result_dir.mkdir(exist_ok=True)
 
-    if background_image is not None:
-        bg_path = UPLOAD_DIR / f"{job_id}_bg.png"
-        with open(bg_path, "wb") as f:
-            shutil.copyfileobj(background_image.file, f)
-        bg_output = job_result_dir / f"{job_id}_with_bg.mp4"
-        replace_background(current_video, bg_path, bg_output)
-        if bg_output.exists():
-            current_video = bg_output
+        cmd = [
+            "python3.8", "inference.py",
+            "--driven_audio", str(audio_path.resolve()),
+            "--source_image", str(image_path.resolve()),
+            "--result_dir", str(job_result_dir.resolve()),
+            "--preprocess", "full",
+            "--enhancer", "gfpgan",
+            "--size", "512",
+            "--batch_size", "32",
+        ]
 
-    if foreground_image is not None:
-        fg_path = UPLOAD_DIR / f"{job_id}_fg.png"
-        with open(fg_path, "wb") as f:
-            shutil.copyfileobj(foreground_image.file, f)
-        fg_output = job_result_dir / f"{job_id}_with_fg.mp4"
-        overlay_foreground(current_video, fg_path, fg_output)
-        if fg_output.exists():
-            current_video = fg_output
+        try:
+            subprocess.run(cmd, cwd=str(SADTALKER_DIR), check=True, timeout=1800)
+        except subprocess.CalledProcessError as e:
+            return JSONResponse(status_code=500, content={"error": "Inference failed", "detail": str(e)})
+        except subprocess.TimeoutExpired:
+            return JSONResponse(status_code=504, content={"error": "Inference timed out (video generation takes too long on this server)"})
 
-    if light_color and light_corner:
-        light_output = job_result_dir / f"{job_id}_with_light.mp4"
-        apply_corner_light(current_video, light_color, light_corner, light_output)
-        if light_output.exists():
-            current_video = light_output
+        mp4_files = list(job_result_dir.glob("**/*.mp4"))
+        if not mp4_files:
+            return JSONResponse(status_code=500, content={"error": "No output video found"})
 
-    return FileResponse(current_video, media_type="video/mp4", filename=f"{job_id}.mp4")
+        current_video = mp4_files[0]
+
+        if background_image is not None:
+            bg_path = UPLOAD_DIR / f"{job_id}_bg.png"
+            with open(bg_path, "wb") as f:
+                shutil.copyfileobj(background_image.file, f)
+            bg_output = job_result_dir / f"{job_id}_with_bg.mp4"
+            replace_background(current_video, bg_path, bg_output)
+            if bg_output.exists():
+                current_video = bg_output
+
+        if foreground_image is not None:
+            fg_path = UPLOAD_DIR / f"{job_id}_fg.png"
+            with open(fg_path, "wb") as f:
+                shutil.copyfileobj(foreground_image.file, f)
+            fg_output = job_result_dir / f"{job_id}_with_fg.mp4"
+            overlay_foreground(current_video, fg_path, fg_output)
+            if fg_output.exists():
+                current_video = fg_output
+
+        if light_color and light_corner:
+            light_output = job_result_dir / f"{job_id}_with_light.mp4"
+            apply_corner_light(current_video, light_color, light_corner, light_output)
+            if light_output.exists():
+                current_video = light_output
+
+        return FileResponse(current_video, media_type="video/mp4", filename=f"{job_id}.mp4")
+
+    except Exception as e:
+        import traceback
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"{type(e).__name__}: {str(e)}", "trace": traceback.format_exc()[-1500:]},
+        )
