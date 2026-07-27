@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: talking-character-studio
+    runtime: docker
+    plan: standard   # do NOT use free/starter -- see README.md, this will OOM
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: 5000
+    disk:
+      name: jobs-disk
+      mountPath: /app/jobs
+      sizeGB: 10

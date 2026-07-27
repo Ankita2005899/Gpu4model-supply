@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Pick a face</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; }
+    h1 { font-size: 1.4rem; }
+    img { max-width: 100%; border: 1px solid #ddd; }
+    .field { margin-bottom: 18px; }
+    label { display: block; font-weight: 600; margin-bottom: 4px; }
+    .hint { color: #666; font-size: 0.9rem; margin-top: 2px; }
+    button { padding: 10px 18px; font-size: 1rem; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Step 2 — Pick a face, then upload the rest</h1>
+
+  <img src="{{ url_for('preview_image', job_id=job_id) }}" alt="detected faces">
+
+  {% if num_faces == 0 %}
+    <p><strong>No faces were auto-detected.</strong> Enter a manual box below
+       (x,y,w,h in pixels, comma-separated) for the face to replace.</p>
+  {% else %}
+    <p>{{ num_faces }} face(s) detected, numbered above. Pick one below, or override
+       manually if the box is off.</p>
+  {% endif %}
+
+  <form action="{{ url_for('submit', job_id=job_id) }}" method="post" enctype="multipart/form-data">
+    {% if num_faces > 0 %}
+    <div class="field">
+      <label for="face_index">Face to replace + animate</label>
+      <select id="face_index" name="face_index">
+        {% for i in range(num_faces) %}
+        <option value="{{ i }}">Face {{ i }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% endif %}
+
+    <div class="field">
+      <label for="manual_box">Manual box override (optional)</label>
+      <input type="text" id="manual_box" name="manual_box" placeholder="e.g. 60,260,140,140">
+      <div class="hint">Leave blank to use the dropdown above.</div>
+    </div>
+
+    <div class="field">
+      <label for="driving_video">Driving video (motion + audio source)</label>
+      <input type="file" id="driving_video" name="driving_video" accept="video/*" required>
+    </div>
+
+    <div class="field">
+      <label for="face_swap_photo">Face-swap photo (identity to place on the chosen face)</label>
+      <input type="file" id="face_swap_photo" name="face_swap_photo" accept="image/*" required>
+    </div>
+
+    <button type="submit">Generate video &rarr;</button>
+  </form>
+</body>
+</html>
