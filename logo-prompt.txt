@@ -1,0 +1,9 @@
+PROMPT FOR CHATGPT (image generation) - logo for "NovaForge AI"
+
+Design a modern, minimal app logo for an AI platform called "NovaForge AI".
+Icon: a bold geometric letter "N" built from a glowing circuit/GPU-chip trace, with a small spark at the top-right corner.
+Style: flat vector, clean lines, rounded square badge, neon cyan (#22d3ee) to violet (#a855f7) gradient on a deep navy (#0b1020) background.
+Also show the wordmark "NovaForge AI" beside the icon in a modern geometric sans-serif, with the small tagline "Powered by GPU4Supply" underneath.
+Requirements: plain dark background, centered, high resolution, sharp edges, no mockup, no 3D, no photo-realism, no extra text.
+
+Save the result as images/logo.png and the website will use it automatically (images/logo.svg is the fallback).
