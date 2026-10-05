@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+uploads/
+results/
+SadTalker/
+.DS_Store
+.env
+api_key.txt
+*.mp3
+*.mp4
