@@ -1,0 +1,7 @@
+.env
+*.pem
+*.sql
+*.xlsx
+__pycache__/
+*.pyc
+.ipynb_checkpoints/

@@ -1,9 +1,9 @@
 // Edit "link" to point to your real tool page / Colab / app URL.
 const TOOLS=[
- {id:"text-to-video-1",icon:"🎬",name:"Text to Video 1",desc:"Turn a prompt into a short video clip.",link:"#"},
+ {id:"text-to-video-1",icon:"🎬",name:"Text to Video 1",desc:"Turn a prompt into a short video clip.",link:"https://colab.research.google.com/github/Ankita2005899/Gpu4model-supply/blob/main/notebooks/ai-avatar-narrator.ipynb"},
  {id:"text-to-video-2",icon:"🎞️",name:"Text to Video 2",desc:"Second video model for a different style.",link:"#"},
- {id:"video-to-script",icon:"📝",name:"Video to Script",desc:"Get a clean script from any video.",link:"#"},
- {id:"text-to-speech",icon:"🔊",name:"Text to Speech",desc:"Natural voice from your text.",link:"#"},
+ {id:"video-to-script",icon:"📝",name:"Video to Script",desc:"Get a clean script from any video.",link:"https://colab.research.google.com/github/Ankita2005899/Gpu4model-supply/blob/main/notebooks/scriptsync-colab.ipynb"},
+ {id:"text-to-speech",icon:"🔊",name:"Text to Speech",desc:"Natural voice from your text.",link:"https://colab.research.google.com/github/Ankita2005899/Gpu4model-supply/blob/main/notebooks/bolchehra-talking-face.ipynb"},
  {id:"background-remover",icon:"✂️",name:"Background Remover",desc:"Remove backgrounds from images and video.",link:"#"},
  {id:"voice-ai-assistant",icon:"🎙️",name:"Voice AI Assistant",desc:"Talk to your AI and get spoken answers.",link:"#"}
 ];
@@ -11,7 +11,7 @@ const grid=document.getElementById("grid");
 TOOLS.forEach(t=>{
  const c=document.createElement("article");c.className="card";
  c.innerHTML=`<h2><span class="ic">${t.icon}</span>${t.name}</h2><p>${t.desc}</p>
- <a class="btn" href="${t.link}">Open ${t.name}</a>
+ <a class="btn" href="${t.link}" target="_blank" rel="noopener">Open ${t.name}</a>
  <div class="vid"><video controls preload="metadata" src="videos/${t.id}.mp4"></video><span class="ph">Demo video goes here<br>videos/${t.id}.mp4</span></div>
  <label class="up" tabindex="0">Preview a video from your device<input type="file" accept="video/*"></label>`;
  const v=c.querySelector("video"),box=c.querySelector(".vid");
